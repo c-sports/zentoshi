@@ -116,6 +116,7 @@ BITCOIN_CORE_H = \
   checkqueue.h \
   clientversion.h \
   coins.h \
+  coldgains.h \
   compat.h \
   compat/assumptions.h \
   compat/byteswap.h \
@@ -316,6 +317,7 @@ libzentoshi_server_a_SOURCES = \
   blockfilter.cpp \
   chain.cpp \
   consensus/tx_verify.cpp \
+  coldgains.cpp \
   dsnotificationinterface.cpp \
   evo/cbtx.cpp \
   evo/deterministicmns.cpp \
@@ -381,6 +383,7 @@ libzentoshi_server_a_SOURCES = \
   pow.cpp \
   rest.cpp \
   rpc/blockchain.cpp \
+  rpc/coldgains.cpp \
   rpc/masternode.cpp \
   rpc/governance.cpp\
   rpc/mining.cpp \

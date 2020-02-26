@@ -193,6 +193,14 @@ unsigned int CScript::GetSigOpCount(const CScript& scriptSig) const
     return subscript.GetSigOpCount(true);
 }
 
+bool CScript::IsCheckLockTimeVerify() const
+{
+    // Extra-fast test for pay-to-script-hash CScripts:
+    return (this->size() == 31 &&
+            (*this)[7] == OP_HASH160 &&
+            (*this)[8] == 0x14);
+}
+
 bool CScript::IsPayToScriptHash() const
 {
     // Extra-fast test for pay-to-script-hash CScripts:

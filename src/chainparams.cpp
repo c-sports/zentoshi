@@ -9,6 +9,7 @@
 
 #include <arith_uint256.h>
 #include <chainparamsseeds.h>
+#include <coldgains.h>
 #include <consensus/merkle.h>
 #include <tinyformat.h>
 #include <util/system.h>
@@ -208,6 +209,7 @@ public:
         consensus.nMinStakeHistory = 60;
         consensus.nModifierInterval = 60;
         consensus.nCoinbaseMaturity = 20;
+        consensus.nColdGainParams = { 12, 2880, 1, 100000, 5 };      // minage, maxage, minamount, maxamount, % interest rate
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = false;
         consensus.nRuleChangeActivationThreshold = 1916; // 95% of 2016
@@ -365,6 +367,7 @@ public:
         consensus.nMinStakeHistory = 15;
         consensus.nModifierInterval = 60;
         consensus.nCoinbaseMaturity = 15;
+        consensus.nColdGainParams = { 1, 22880, 1, 100000, 5 };      // minage, maxage, minamount, maxamount, % interest rate
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = false;
         consensus.nRuleChangeActivationThreshold = 1916; // 95% of 2016
@@ -519,6 +522,7 @@ public:
         consensus.nStakeMaxAge = 60 * 60 * 24 * 30;
         consensus.nModifierInterval = 60 * 20;
         consensus.nCoinbaseMaturity = 20;
+        consensus.nColdGainParams = { 12, 720, 500, 100000, 5 };      // minage, maxage, minamount, maxamount, % interest rate
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = false;
         consensus.nRuleChangeActivationThreshold = 50;

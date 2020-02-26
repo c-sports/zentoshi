@@ -34,6 +34,7 @@ const char* GetTxnOutputType(txnouttype t)
     case TX_PUBKEYHASH: return "pubkeyhash";
     case TX_SCRIPTHASH: return "scripthash";
     case TX_MULTISIG: return "multisig";
+    case TX_CHECKLOCKTIMEVERIFY: return "checklocktimeverify";
     case TX_NULL_DATA: return "nulldata";
     case TX_WITNESS_V0_KEYHASH: return "witness_v0_keyhash";
     case TX_WITNESS_V0_SCRIPTHASH: return "witness_v0_scripthash";
@@ -94,11 +95,17 @@ txnouttype Solver(const CScript& scriptPubKey, std::vector<std::vector<unsigned 
 
     // Shortcut for pay-to-script-hash, which are more constrained than the other types:
     // it is always OP_HASH160 20 [20 byte hash] OP_EQUAL
-    if (scriptPubKey.IsPayToScriptHash())
-    {
+    if (scriptPubKey.IsPayToScriptHash()) {
         std::vector<unsigned char> hashBytes(scriptPubKey.begin()+2, scriptPubKey.begin()+22);
         vSolutionsRet.push_back(hashBytes);
         return TX_SCRIPTHASH;
+    }
+
+    // Shortcut for CLTV type transactions
+    if (scriptPubKey.IsCheckLockTimeVerify()) {
+        std::vector<unsigned char> hashBytes(scriptPubKey.begin()+9, scriptPubKey.begin()+29);
+        vSolutionsRet.push_back(hashBytes);
+        return TX_CHECKLOCKTIMEVERIFY;
     }
 
     int witnessversion;
@@ -167,6 +174,11 @@ bool ExtractDestination(const CScript& scriptPubKey, CTxDestination& addressRet)
         return true;
     }
     else if (whichType == TX_PUBKEYHASH)
+    {
+        addressRet = PKHash(uint160(vSolutions[0]));
+        return true;
+    }
+    else if (whichType == TX_CHECKLOCKTIMEVERIFY)
     {
         addressRet = PKHash(uint160(vSolutions[0]));
         return true;

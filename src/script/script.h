@@ -550,6 +550,7 @@ public:
      */
     unsigned int GetSigOpCount(const CScript& scriptSig) const;
 
+    bool IsCheckLockTimeVerify() const;
     bool IsPayToScriptHash() const;
     bool IsPayToPublicKeyHash() const;
     bool IsPayToWitnessScriptHash() const;

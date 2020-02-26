@@ -207,6 +207,7 @@ struct Params {
     int MinStakeHistory() const { return nMinStakeHistory; }
     LLMQType llmqTypeChainLocks;
     LLMQType llmqTypeInstantSend{LLMQ_NONE};
+    std::vector<unsigned int> nColdGainParams;
 };
 } // namespace Consensus
 

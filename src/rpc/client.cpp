@@ -173,6 +173,9 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "createwallet", 4, "avoid_reuse"},
     { "getnodeaddresses", 0, "count"},
     { "stop", 0, "wait" },
+    { "createcoldtransaction", 1, "txid"},
+    { "createcoldtransaction", 2, "vout"},
+    { "createcoldtransaction", 3, "duration"},
 };
 // clang-format on
 
