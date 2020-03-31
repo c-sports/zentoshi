@@ -27,6 +27,7 @@ public:
     uint32_t nTime;
     uint32_t nBits;
     uint32_t nNonce;
+    COutPoint prevoutStake;
 
     CBlockHeader()
     {
@@ -43,6 +44,8 @@ public:
         READWRITE(nTime);
         READWRITE(nBits);
         READWRITE(nNonce);
+        if (!this->nNonce)
+            READWRITE(prevoutStake);
     }
 
     void SetNull()
@@ -53,6 +56,7 @@ public:
         nTime = 0;
         nBits = 0;
         nNonce = 0;
+        prevoutStake.SetNull();
     }
 
     bool IsNull() const
@@ -67,6 +71,16 @@ public:
     int64_t GetBlockTime() const
     {
         return (int64_t)nTime;
+    }
+
+    bool IsProofOfStake() const
+    {
+        return (nNonce == 0 && !prevoutStake.IsNull());
+    }
+
+    bool IsProofOfWork() const
+    {
+        return !IsProofOfStake();
     }
 };
 

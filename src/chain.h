@@ -305,6 +305,7 @@ public:
         block.nTime          = nTime;
         block.nBits          = nBits;
         block.nNonce         = nNonce;
+        block.prevoutStake   = prevoutStake;
         return block;
     }
 
@@ -500,6 +501,7 @@ public:
         block.nTime           = nTime;
         block.nBits           = nBits;
         block.nNonce          = nNonce;
+        block.prevoutStake    = prevoutStake;
         return block.GetHash();
     }
 
