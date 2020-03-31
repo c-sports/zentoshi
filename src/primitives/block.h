@@ -17,10 +17,10 @@
  * in the block is a special one that creates a new coin owned by the creator
  * of the block.
  */
-class CBlockHeader
+class CBlockHeaderBase
 {
 public:
-    // header
+
     int32_t nVersion;
     uint256 hashPrevBlock;
     uint256 hashMerkleRoot;
@@ -28,6 +28,25 @@ public:
     uint32_t nBits;
     uint32_t nNonce;
     COutPoint prevoutStake;
+
+    ADD_SERIALIZE_METHODS;
+
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action) {
+        READWRITE(this->nVersion);
+        READWRITE(hashPrevBlock);
+        READWRITE(hashMerkleRoot);
+        READWRITE(nTime);
+        READWRITE(nBits);
+        READWRITE(nNonce);
+        if(!this->nNonce)
+           READWRITE(prevoutStake);
+    }
+};
+
+class CBlockHeader : public CBlockHeaderBase
+{
+public:
 
     CBlockHeader()
     {
@@ -44,8 +63,7 @@ public:
         READWRITE(nTime);
         READWRITE(nBits);
         READWRITE(nNonce);
-        if (!this->nNonce)
-            READWRITE(prevoutStake);
+        READWRITE(prevoutStake);
     }
 
     void SetNull()
@@ -73,15 +91,17 @@ public:
         return (int64_t)nTime;
     }
 
-    bool IsProofOfStake() const
-    {
-        return (nNonce == 0 && !prevoutStake.IsNull());
-    }
-
     bool IsProofOfWork() const
     {
-        return !IsProofOfStake();
+        return (nNonce != 0 && prevoutStake.IsNull());
     }
+
+    bool IsProofOfStake() const
+    {
+        return !IsProofOfWork();
+    }
+
+    std::string ToString() const;
 };
 
 
@@ -128,6 +148,11 @@ public:
         vchBlockSig.clear();
     }
 
+    std::pair<COutPoint, unsigned int> GetProofOfStake() const
+    {
+        return IsProofOfStake() ? std::make_pair(prevoutStake, nTime) : std::make_pair(COutPoint(), (unsigned int)0);
+    }
+
     CBlockHeader GetBlockHeader() const
     {
         CBlockHeader block;
@@ -137,6 +162,7 @@ public:
         block.nTime          = nTime;
         block.nBits          = nBits;
         block.nNonce         = nNonce;
+        block.prevoutStake   = prevoutStake;
         return block;
     }
 

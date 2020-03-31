@@ -1265,7 +1265,7 @@ bool ReadBlockFromDisk(CBlock& block, const FlatFilePos& pos, const Consensus::P
     }
 
     // Check the header
-    if (!CheckProofOfWork(block.GetPoWHash(), block.nBits, consensusParams) && block.IsProofOfWork())
+    if (block.IsProofOfWork() && !CheckProofOfWork(block.GetPoWHash(), block.nBits, consensusParams))
         return error("ReadBlockFromDisk: Errors in block header at %s", pos.ToString());
 
     return true;
@@ -3664,10 +3664,32 @@ static bool FindUndoPos(CValidationState &state, int nFile, FlatFilePos &pos, un
 
 static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state, const Consensus::Params& consensusParams, bool fCheckPOW = true)
 {
-    bool isProofOfWork = block.nNonce > 0;
-    if (!CheckProofOfWork(block.GetPoWHash(), block.nBits, consensusParams) && fCheckPOW && isProofOfWork) {
-        return state.Invalid(ValidationInvalidReason::BLOCK_INVALID_HEADER, false, REJECT_INVALID, "high-hash", "proof of work failed");
+    bool isProofOfWork = block.prevoutStake.IsNull();
+
+    //! stake validation requires pindex
+    int nHeight = 0;
+    CBlockIndex* pindexPrev = nullptr;
+    const BlockMap::iterator mi = ::BlockIndex().find(block.hashPrevBlock);
+    if (mi != ::BlockIndex().end()) {
+        pindexPrev = mi->second;
+        nHeight = pindexPrev->nHeight + 1;
     }
+
+    if (isProofOfWork) {
+        if (fCheckPOW && !CheckProofOfWork(block.GetPoWHash(), block.nBits, consensusParams))
+            return state.Invalid(ValidationInvalidReason::BLOCK_INVALID_HEADER, false, REJECT_INVALID, "high-hash", "proof of work failed");
+    }
+    else
+    {
+        uint256 hashProofOfStake = uint256();
+        if (!CheckProofOfStake(block, hashProofOfStake, pindexPrev)) {
+            LogPrintf("hashProof %s\n", hashProofOfStake.ToString().c_str());
+            return state.Invalid(ValidationInvalidReason::BLOCK_INVALID_HEADER, false, REJECT_INVALID, "invalid-stake", "proof of stake failed");
+        }
+    }
+
+    LogPrintf("%s - validated blockheader (%s) for height %d..\n", __func__, isProofOfWork ? "PoW" : "PoS", nHeight);
+
     return true;
 }
 
@@ -3680,7 +3702,7 @@ bool CheckBlock(const CBlock& block, CValidationState& state, const Consensus::P
 
     // Check that the header is valid (particularly PoW).  This is mostly
     // redundant with the call in AcceptBlockHeader.
-    if (!CheckBlockHeader(block, state, consensusParams, fCheckPOW && block.IsProofOfWork()))
+    if (block.IsProofOfWork() && !CheckBlockHeader(block, state, consensusParams, fCheckPOW))
         return false;
 
     // Check the merkle root.

@@ -36,6 +36,20 @@ bool CBlock::IsProofOfWork() const
     return !IsProofOfStake();
 }
 
+std::string CBlockHeader::ToString() const
+{
+    std::stringstream s;
+    s << strprintf("CBlock(hash=%s, type=%s, ver=0x%08x, hashPrevBlock=%s, hashMerkleRoot=%s, nTime=%u, nBits=%08x, nNonce=%u, prevoutStake=%s)\n",
+        GetHash().ToString(),
+        nNonce == 0 ? "PoS" : "PoW",
+        nVersion,
+        hashPrevBlock.ToString(),
+        hashMerkleRoot.ToString(),
+        nTime, nBits, nNonce,
+        prevoutStake.ToString());
+    return s.str();
+}
+
 std::string CBlock::ToString() const
 {
     std::stringstream s;
