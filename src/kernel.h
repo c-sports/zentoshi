@@ -10,6 +10,7 @@
 #include <uint256.h>
 
 class CBlock;
+class CBlockHeader;
 class CWallet;
 class COutPoint;
 class CBlockIndex;
@@ -34,6 +35,7 @@ bool CheckStakeKernelHash(unsigned int nBits, const CBlockHeader& blockFrom, con
 // Check kernel hash target and coinstake signature
 // Sets hashProofOfStake on success return
 bool CheckProofOfStake(const CBlock &block, uint256& hashProofOfStake, const CBlockIndex* pindexPrev);
+bool CheckProofOfStake(const CBlockHeader& block, uint256& hashProofOfStake, const CBlockIndex* pindexPrev);
 
 // Get stake modifier checksum
 unsigned int GetStakeModifierChecksum(const CBlockIndex* pindex);

@@ -248,7 +248,7 @@ public:
         SetNull();
     }
 
-    explicit CBlockIndex(const CBlock& block)
+    explicit CBlockIndex(const CBlockHeader& block)
     {
         SetNull();
 
@@ -257,6 +257,7 @@ public:
         nTime          = block.nTime;
         nBits          = block.nBits;
         nNonce         = block.nNonce;
+        prevoutStake   = block.prevoutStake;
 
         //Proof of Stake
         bnChainTrust = uint256();
@@ -269,7 +270,7 @@ public:
 
         if (block.IsProofOfStake()) {
             SetProofOfStake();
-            prevoutStake = block.vtx[1]->vin[0].prevout;
+            prevoutStake = block.prevoutStake;
             nStakeTime = block.nTime;
         } else {
             prevoutStake.SetNull();
@@ -305,6 +306,7 @@ public:
         block.nTime          = nTime;
         block.nBits          = nBits;
         block.nNonce         = nNonce;
+        block.prevoutStake   = prevoutStake;
         return block;
     }
 
@@ -482,6 +484,7 @@ public:
 
         // block hash
         READWRITE(hash);
+
         // block header
         READWRITE(this->nVersion);
         READWRITE(hashPrev);
@@ -500,6 +503,7 @@ public:
         block.nTime           = nTime;
         block.nBits           = nBits;
         block.nNonce          = nNonce;
+        block.prevoutStake    = prevoutStake;
         return block.GetHash();
     }
 

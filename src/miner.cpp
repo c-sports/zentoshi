@@ -206,6 +206,7 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
                 pblock->nTime = nTxNewTime;
                 coinbaseTx.vout[0].SetEmpty();
                 coinstakeTx.nType = TRANSACTION_STAKE;
+                pblock->prevoutStake = coinstakeTx.vin[0].prevout;
                 FillBlockPayments(coinstakeTx, nHeight, blockReward, pblocktemplate->voutMasternodePayments, pblocktemplate->voutSuperblockPayments, true);
                 fStakeFound = true;
             }

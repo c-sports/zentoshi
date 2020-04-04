@@ -361,7 +361,7 @@ int GetLastHeight(uint256 txHash)
     return ::LookupBlockIndex(hashBlock)->nHeight;
 }
 
-// Check kernel hash target and coinstake signature
+// Check proof of stake (full block data)
 bool CheckProofOfStake(const CBlock &block, uint256& hashProofOfStake, const CBlockIndex* pindexPrev)
 {
     const CTransactionRef &tx = block.vtx[1];
@@ -410,6 +410,49 @@ bool CheckProofOfStake(const CBlock &block, uint256& hashProofOfStake, const CBl
 
     if (!CheckStakeKernelHash(block.nBits, blockprev, txPrev, txin.prevout, block.nTime, hashProofOfStake))
         return error("CheckProofOfStake() : INFO: check kernel failed on coinstake %s, hashProof=%s \n", tx->GetHash().ToString().c_str(), hashProofOfStake.ToString().c_str());
+
+    return true;
+}
+
+// Check proof of stake (blockheader only)
+bool CheckProofOfStake(const CBlockHeader& block, uint256& hashProofOfStake, const CBlockIndex* pindexPrev)
+{
+    //! COutPoint as prevoutStake
+    const COutPoint& prevoutStake = block.prevoutStake;
+
+    // Enforce minimum stake depth
+    const int nPreviousBlockHeight = pindexPrev->nHeight;
+    const int nBlockFromHeight = GetLastHeight(prevoutStake.hash);
+
+    // returning zero from GetLastHeight() indicates error
+    if (nBlockFromHeight == 0)
+        return false;
+
+    if (!HasStakeMinDepth(nPreviousBlockHeight + 1, nBlockFromHeight))
+        return error("CheckProofOfStake() : min stake depth not met");
+
+    //! Retrieve tx from disk
+    uint256 hashBlock;
+    CTransactionRef txPrev;
+    const auto& cons = Params().GetConsensus();
+    if (!GetTransaction(prevoutStake.hash, txPrev, cons, hashBlock))
+        return error("CheckProofOfStake() : INFO: read txPrev failed");
+
+    // Find block index
+    CBlockIndex* pindex = nullptr;
+    BlockMap::iterator it = ::BlockIndex().find(hashBlock);
+    if (it != ::BlockIndex().end())
+        pindex = it->second;
+    else
+        return error("CheckProofOfStake() : read block failed");
+
+    // Read block header
+    CBlock blockprev;
+    if (!ReadBlockFromDisk(blockprev, pindex->GetBlockPos(), cons))
+        return error("CheckProofOfStake(): INFO: failed to find block");
+
+    if (!CheckStakeKernelHash(block.nBits, blockprev, txPrev, prevoutStake, block.nTime, hashProofOfStake))
+        return error("CheckProofOfStake() : INFO: check kernel failed on coinstake %s, hashProof=%s \n", txPrev->GetHash().ToString().c_str(), hashProofOfStake.ToString().c_str());
 
     return true;
 }
